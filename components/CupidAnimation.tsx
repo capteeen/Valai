@@ -4,18 +4,45 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
 const CupidAnimation = () => {
-  const [position, setPosition] = useState({ x: -100, y: 50 })
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setPosition({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * (window.innerHeight / 2)
-      })
-    }, 5000)
+    // Set initial dimensions
+    setDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight
+    })
 
-    return () => clearInterval(interval)
-  }, [])
+    // Update position based on dimensions
+    const updatePosition = () => {
+      setPosition({
+        x: Math.random() * dimensions.width,
+        y: Math.random() * (dimensions.height / 2)
+      })
+    }
+
+    // Set initial position
+    updatePosition()
+
+    // Update position periodically
+    const interval = setInterval(updatePosition, 5000)
+
+    // Handle window resize
+    const handleResize = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [dimensions])
 
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
@@ -54,13 +81,13 @@ const CupidAnimation = () => {
       </motion.div>
 
       {/* Floating Love Effects */}
-      {Array.from({ length: 5 }).map((_, i) => (
+      {dimensions.width > 0 && Array.from({ length: 5 }).map((_, i) => (
         <motion.div
           key={i}
           className="absolute"
           initial={{ 
-            x: Math.random() * window.innerWidth,
-            y: window.innerHeight,
+            x: Math.random() * dimensions.width,
+            y: dimensions.height,
             opacity: 0 
           }}
           animate={{
