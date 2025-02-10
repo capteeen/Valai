@@ -7,8 +7,11 @@ const SPARKLE_CHARACTERS = ['✨', '⭐', '🌟', '💫', '✦', '✯']
 
 const Sparkles = () => {
   const [sparkles, setSparkles] = useState<Array<{ id: number; x: number; y: number; character: string }>>([])
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    
     // Create initial sparkles
     const initialSparkles = Array.from({ length: 15 }, (_, i) => ({
       id: i,
@@ -20,19 +23,19 @@ const Sparkles = () => {
 
     // Add new sparkles periodically
     const interval = setInterval(() => {
-      setSparkles(current => {
-        const newSparkle = {
-          id: Date.now(),
-          x: Math.random() * 100,
-          y: Math.random() * 100,
-          character: SPARKLE_CHARACTERS[Math.floor(Math.random() * SPARKLE_CHARACTERS.length)]
-        }
-        return [...current.slice(-14), newSparkle] // Keep last 15 sparkles
-      })
+      const newSparkle = {
+        id: Date.now(),
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        character: SPARKLE_CHARACTERS[Math.floor(Math.random() * SPARKLE_CHARACTERS.length)]
+      }
+      setSparkles(current => [...current.slice(-14), newSparkle])
     }, 2000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, []) // Empty dependency array
+
+  if (!mounted) return null
 
   return (
     <div className="fixed inset-0 pointer-events-none z-20">
@@ -62,42 +65,40 @@ const Sparkles = () => {
       ))}
 
       {/* Trailing Sparkles */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        {Array.from({ length: 8 }).map((_, i) => (
+      {Array.from({ length: 8 }).map((_, i) => (
+        <motion.div
+          key={`trail-${i}`}
+          className="absolute"
+          initial={{ 
+            x: -20,
+            y: `${Math.random() * 100}%`,
+          }}
+          animate={{
+            x: '120%',
+            rotate: 360,
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            delay: i * 1,
+            ease: "linear",
+          }}
+        >
           <motion.div
-            key={`trail-${i}`}
-            className="absolute"
-            initial={{ 
-              x: -20,
-              y: Math.random() * 100 + '%',
-            }}
             animate={{
-              x: '120%',
-              rotate: 360,
+              scale: [1, 1.5, 1],
+              opacity: [0.5, 1, 0.5],
             }}
             transition={{
-              duration: 8,
+              duration: 2,
               repeat: Infinity,
-              delay: i * 1,
-              ease: "linear",
+              ease: "easeInOut",
             }}
           >
-            <motion.div
-              animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.5, 1, 0.5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <span className="text-lg md:text-xl text-yellow-300">✨</span>
-            </motion.div>
+            <span className="text-lg md:text-xl text-yellow-300">✨</span>
           </motion.div>
-        ))}
-      </div>
+        </motion.div>
+      ))}
 
       {/* Corner Sparkles */}
       {Array.from({ length: 4 }).map((_, i) => (

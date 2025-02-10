@@ -9,16 +9,21 @@ const CupidAnimation = () => {
 
   useEffect(() => {
     // Set initial dimensions
-    setDimensions({
-      width: window.innerWidth,
-      height: window.innerHeight
-    })
+    const updateDimensions = () => {
+      setDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+    }
 
-    // Update position based on dimensions
+    // Initial setup
+    updateDimensions()
+
+    // Update position based on current dimensions
     const updatePosition = () => {
       setPosition({
-        x: Math.random() * dimensions.width,
-        y: Math.random() * (dimensions.height / 2)
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * (window.innerHeight / 2)
       })
     }
 
@@ -26,23 +31,18 @@ const CupidAnimation = () => {
     updatePosition()
 
     // Update position periodically
-    const interval = setInterval(updatePosition, 5000)
+    const positionInterval = setInterval(updatePosition, 5000)
 
     // Handle window resize
-    const handleResize = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      })
-    }
-
-    window.addEventListener('resize', handleResize)
+    window.addEventListener('resize', updateDimensions)
 
     return () => {
-      clearInterval(interval)
-      window.removeEventListener('resize', handleResize)
+      clearInterval(positionInterval)
+      window.removeEventListener('resize', updateDimensions)
     }
-  }, [dimensions])
+  }, []) // Empty dependency array
+
+  if (dimensions.width === 0) return null
 
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
@@ -81,7 +81,7 @@ const CupidAnimation = () => {
       </motion.div>
 
       {/* Floating Love Effects */}
-      {dimensions.width > 0 && Array.from({ length: 5 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <motion.div
           key={i}
           className="absolute"
