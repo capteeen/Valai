@@ -44,6 +44,11 @@ const openai = new OpenAI({
   timeout: 180000, // 3 minutes timeout for OpenAI requests
 })
 
+type OpenAIError = {
+  status?: number;
+  message?: string;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json()
@@ -140,14 +145,15 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(suggestions)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error generating gift suggestions:', error)
+    const err = error as OpenAIError
     return NextResponse.json(
       { 
         error: 'Failed to generate gift suggestions',
-        details: error.message || 'Unknown error'
+        details: err.message || 'Unknown error'
       },
-      { status: error.status || 500 }
+      { status: err.status || 500 }
     )
   }
 } 
