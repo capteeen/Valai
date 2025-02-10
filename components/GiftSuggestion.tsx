@@ -78,7 +78,7 @@ export default function GiftSuggestions({ suggestions }: Props) {
 
               <div className="mt-4 p-4 bg-pink-50 rounded-lg italic">
                 <p className="text-pink-700 font-dancing text-lg">
-                  "{suggestion.message}"
+                  &ldquo;{suggestion.message}&rdquo;
                 </p>
               </div>
             </div>
