@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+// Configure longer timeout
+export const maxDuration = 300 // 5 minutes timeout
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+
 type GiftSuggestion = {
   name: string
   price: string
@@ -35,7 +40,8 @@ function generateShoppingLink(product: string, store: string): string {
 }
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
+  timeout: 180000, // 3 minutes timeout for OpenAI requests
 })
 
 export async function POST(req: Request) {
@@ -43,14 +49,22 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { partnerName, ageRange, hobbies, interests, priceRange, occasion, allergies } = body
 
+    // Validate required fields
+    if (!partnerName || !ageRange || !hobbies || !priceRange || !occasion) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
     const prompt = `As a thoughtful gift advisor, suggest 5 perfect Valentine's Day gifts for ${partnerName}. 
     Consider the following details:
     - Age Range: ${ageRange}
     - Hobbies: ${hobbies.join(', ')}
-    - Interests: ${interests}
+    - Interests: ${interests || 'Not specified'}
     - Price Range: ${priceRange}
     - Occasion: ${occasion}
-    - Avoid/Allergies: ${allergies}
+    - Avoid/Allergies: ${allergies || 'None specified'}
 
     Please provide the response in the following JSON format:
     {
@@ -126,11 +140,14 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(suggestions)
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating gift suggestions:', error)
     return NextResponse.json(
-      { error: 'Failed to generate gift suggestions' },
-      { status: 500 }
+      { 
+        error: 'Failed to generate gift suggestions',
+        details: error.message || 'Unknown error'
+      },
+      { status: error.status || 500 }
     )
   }
 } 
